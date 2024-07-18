@@ -18,6 +18,9 @@ inputs:
   persist-credentials:
     description: 'Whether to configure the token or SSH key with the local git config'
     default: true
+  fetch-depth:
+    description: 'Number of commits to fetch. 0 indicates all history for all branches and tags'
+    default: 1
 
 # Note:
 # - inputs.* should be manually mapped to INPUT_* due to https://github.com/actions/runner/issues/665
@@ -29,4 +32,5 @@ runs:
       env:
         INPUT_TOKEN: '${{ inputs.token }}'
         INPUT_PERSIST_CREDENTIALS: '${{ inputs.persist-credentials }}'
+        INPUT_FETCH_DEPTH: '${{ inputs.fetch-depth }}'
       shell: bash
