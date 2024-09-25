@@ -149,23 +149,45 @@ g git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 
 g git config --local gc.auto 0
 
+
+if [ "${INPUT_FETCH_DEPTH}" = "0" ]; then
+    depth_flag=""
+else
+    depth_flag="--depth ${INPUT_FETCH_DEPTH}"
+fi
+
+# If running on branch head
 if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
+    echo "Running for branch ${GITHUB_REF}"
+    
+    # Extract the branch name
     branch="${GITHUB_REF#refs/heads/}"
     remote_ref="refs/remotes/origin/${branch}"
+
+    # Fetch the specific branch from the remote
     fetch_ref="+${GITHUB_SHA}:${remote_ref}"
+    g retry git fetch --prune --no-recurse-submodules ${depth_flag} origin "${fetch_ref}"
+    
+    # Checkout the branch, forcefully if necessary
+    g retry git checkout --force -B "${branch}" "${remote_ref}"
+
+# If running on a tag push
+elif [[ "${GITHUB_REF}" == "refs/tags/"* ]]; then
+    echo "Running for tag ${GITHUB_REF}"
+
+    tag="${GITHUB_REF#refs/tags/}"
+    remote_ref="refs/remotes/origin/${tag}"
+
+    # Fetch the specific tag from the remote
+    fetch_ref="+${tag}:${remote_ref}"
+    g retry git fetch --prune --no-recurse-submodules origin "${fetch_ref}"
+    
+    # Checkout the tag, forcefully if necessary
+    g retry git checkout --force "${tag}"
+
 else
     fetch_ref="+${GITHUB_SHA}:${GITHUB_REF}"
-fi
-
-if [[ "${INPUT_FETCH_DEPTH}" == "0" ]]; then
-    g retry git fetch --prune --no-recurse-submodules origin "${fetch_ref}"
-else
-    g retry git fetch --no-tags --prune --no-recurse-submodules --depth="${INPUT_FETCH_DEPTH}" origin "${fetch_ref}"
-fi
-
-if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
-    g retry git checkout --force -B "${branch}" "${remote_ref}"
-else
+    g retry git fetch --prune --no-recurse-submodules ${depth_flag} origin "${fetch_ref}"
     g retry git checkout --force "${GITHUB_REF}"
 fi
 
