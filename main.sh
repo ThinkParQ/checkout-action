@@ -186,8 +186,7 @@ elif [[ "${GITHUB_REF}" == "refs/tags/"* ]]; then
     g retry git checkout --force "${tag}"
 
 else
-    fetch_ref="+${GITHUB_SHA}:${GITHUB_REF}"
-    g retry git fetch --prune --no-recurse-submodules ${depth_flag} origin "${fetch_ref}"
+    g retry git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin "+${GITHUB_SHA}:${GITHUB_REF}"
     g retry git checkout --force "${GITHUB_REF}"
 fi
 
