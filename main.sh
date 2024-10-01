@@ -153,7 +153,7 @@ g git config --local gc.auto 0
 if [ "${INPUT_FETCH_DEPTH}" = "0" ]; then
     depth_flag=""
 else
-    depth_flag="--depth ${INPUT_FETCH_DEPTH}"
+    depth_flag="--depth=${INPUT_FETCH_DEPTH}"
 fi
 
 # If running on branch head
